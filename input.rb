@@ -1,3 +1,7 @@
+class RoundWinner
+    attr_accessor :p1_points, :p2_points, :winner, :advantage
+end
+
 def check_file_validity(file)
     if file == nil
         raise_abort("No haz seleccionado un archivo valido")
@@ -59,8 +63,10 @@ def duel_of_the_fates(data)
     $i = 0
     $rounds = data[0].to_i
 
-    winner = ""
-    $advantage = 0
+    rounds_winners = []
+
+    p1_total_points = 0
+    p2_total_points = 0
 
     while $i < $rounds  do
         points = data[$i + 1].split
@@ -68,25 +74,39 @@ def duel_of_the_fates(data)
         p1_points = points[0].to_i
         p2_points = points[1].to_i
 
-        $difference = 0
-        round_winner = ""
+        p1_total_points += p1_points
+        p2_total_points += p2_points
 
-        if p1_points > p2_points
-            $difference = p1_points - p2_points
-            round_winner = "1"
-        elsif p2_points > p1_points
-            $difference = p2_points - p1_points
-            round_winner = "2"
-        else
-            $difference = 0
+        round_winner = RoundWinner.new()
+        round_winner.p1_points = p1_total_points
+        round_winner.p2_points = p2_total_points
+
+        if p1_total_points > p2_total_points
+            round_winner.winner = "1"
+            round_winner.advantage = p1_total_points - p2_total_points
+        elsif p2_total_points > p1_total_points
+            round_winner.winner = "2"
+            round_winner.advantage = p2_total_points - p1_total_points
+        else 
+            round_winner.winner = ""
+            round_winner.advantage = 0
         end
 
-        if $difference > $advantage
-            $advantage = $difference
-            winner = round_winner
-        end
+        rounds_winners.push(round_winner)
 
         $i += 1
+    end
+
+    winner = ""
+    $advantage = 0
+
+    rounds_winners.each do |round_winner|
+        puts "Resultado ronda #{$i + 1}: P1: #{round_winner.p1_points}, P2: #{round_winner.p2_points}, Lider: #{round_winner.winner}, Ventaja: #{round_winner.advantage}"
+
+        if round_winner.advantage > $advantage
+            winner = round_winner.winner
+            $advantage = round_winner.advantage
+        end
     end
 
     save_file("#{winner} #{$advantage}")
